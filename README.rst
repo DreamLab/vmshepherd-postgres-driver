@@ -5,13 +5,15 @@ vmshepherd-runtime-postgres-driver
 tests
 -----
 
-..
+::
+
     make test
 
 develop
 -------
 
-..
+::
+
 	make db
 	make develop
 
@@ -35,6 +37,7 @@ Create config/settings.yaml file (the same as for vmshepherd) and insert the fol
 
 Next step run application
 
-..
+::
+
 	make run
 
