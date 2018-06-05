@@ -1,0 +1,30 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[[source]]
+
+url = "http://pypi-repo.onet/simple"
+verify_ssl = false
+name = "onet_pypi"
+
+
+[[source]]
+
+url = "http://pypi-mirror.onet/simple"
+verify_ssl = false
+name = "onet_pypi_mirror"
+
+
+[packages]
+
+asyncpg = "==0.15.0"
+vmshepherd = "*"
+
+
+[requires]
+
+python_version = "3.6"
