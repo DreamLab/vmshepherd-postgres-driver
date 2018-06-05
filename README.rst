@@ -44,18 +44,13 @@ Available config options
    :header: "Name", "Type", "Description", "Default value"
    :widths: 15, 10, 40, 10
 
-   "host", "string", "Postgres DB host", ""
-   "port", "integer", "Postgres DB port", "5432"
-   "database", "string", "Postgres DB name", ""
+   "host", "string", "Postgres DB host.", ""
+   "port", "integer", "Postgres DB port.", "5432"
+   "database", "string", "Postgres DB name.", ""
    "user", "string", "Postgres auth user.", ""
    "password", "string", "Postgres auth password.", ""
    "pool_size", "integer", "Postgres connection pool size.","2"
 
-
-License
--------
-
-MIT
 
 
 Develop
@@ -73,4 +68,10 @@ Create local DB in docker and start vmshepherd:
 
 	make db
 	make develop
+
+
+License
+-------
+
+`Apache License 2.0 <LICENSE>`_
 
