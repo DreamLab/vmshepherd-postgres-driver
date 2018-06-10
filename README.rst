@@ -38,7 +38,7 @@ Install package (in the same environment as VmShepherd) and configure ``VmShephe
 
 
 Available config options
-~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 .. csv-table::
    :header: "Name", "Type", "Description", "Default value"
