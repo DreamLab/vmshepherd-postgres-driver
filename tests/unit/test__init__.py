@@ -83,26 +83,10 @@ class TestPostgresDriver(AsyncTestCase):
         await self.pg_driver._set_preset_data('mock_preset_name',  # pylint: disable=protected-access
                                               self.mock_preset_data)
 
-        mock_pool.fetchrow.assert_called_once_with(ANY, 'mock_preset_name')
         mock_pool.execute.assert_called_once_with(
             ANY, 'mock_preset_name',
             datetime(1970, 1, 1, 1, 0), 'mock_instance_id',
             json.dumps({'failed_checks': self.mock_preset_data['failed_checks']})
-        )
-
-    @assure_connected
-    async def test_set_preset_data_exist(self):
-        mock_pool = patch.object(self.pg_driver, '_pool').start()
-        mock_pool.fetchrow.return_value = futurized(True)
-        mock_pool.execute.return_value = futurized([])
-
-        await self.pg_driver._set_preset_data('mock_preset_name',  # pylint: disable=protected-access
-                                              self.mock_preset_data)
-
-        mock_pool.fetchrow.assert_called_once_with(ANY, 'mock_preset_name')
-        mock_pool.execute.assert_called_once_with(
-            ANY, datetime(1970, 1, 1, 1, 0), 'mock_instance_id',
-            json.dumps({'failed_checks': self.mock_preset_data['failed_checks']}), 'mock_preset_name'
         )
 
     @assure_connected
@@ -140,29 +124,16 @@ class TestPostgresDriver(AsyncTestCase):
     async def test_acquire_lock_already_locked(self):
         mock_pool = patch.object(self.pg_driver, '_pool').start()
         mock_con = Mock_CM()
-        mock_con.fetchval.return_value = futurized(True)
+        mock_con.fetchval.return_value = futurized(False)
         mock_pool.acquire.return_value = mock_con
 
         self.assertFalse(await self.pg_driver._acquire_lock('mock_preset_name'))  # pylint: disable=protected-access
 
     @assure_connected
-    async def test_acquire_lock_new_preset_locked(self):
+    async def test_acquire_lock(self):
         mock_pool = patch.object(self.pg_driver, '_pool').start()
         mock_con = Mock_CM()
-        mock_con.fetchval.return_value = futurized(None)
-        mock_con.execute.return_value = futurized(None)
+        mock_con.fetchval.return_value = futurized(True)
         mock_pool.acquire.return_value = mock_con
 
         self.assertTrue(await self.pg_driver._acquire_lock('mock_preset_name'))  # pylint: disable=protected-access
-        mock_con.execute.assert_called_once_with(ANY, 'mock_preset_name')
-
-    @assure_connected
-    async def test_acquire_lock_existing_preset_locked(self):
-        mock_pool = patch.object(self.pg_driver, '_pool').start()
-        mock_con = Mock_CM()
-        mock_con.fetchval.return_value = futurized(False)
-        mock_con.execute.return_value = futurized(None)
-        mock_pool.acquire.return_value = mock_con
-
-        self.assertTrue(await self.pg_driver._acquire_lock('mock_preset_name'))  # pylint: disable=protected-access
-        mock_con.execute.assert_called_once_with(ANY, 'mock_preset_name')
