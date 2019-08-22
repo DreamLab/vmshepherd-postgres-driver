@@ -6,29 +6,6 @@ import asyncpg
 from vmshepherd.runtime import AbstractRuntimeData
 
 
-queries = {
-    'get_preset':
-        '''
-        SELECT * FROM preset_states 
-        WHERE pst_name = $1
-        ''',
-    'upsert_preset':
-        '''
-        SELECT * FROM upsert_preset($1, $2, $3, $4::json)   
-        ''',
-    'lock_preset':
-        '''
-        SELECT * FROM lock_preset($1)
-        ''',
-    'unlock_preset':
-        '''
-        UPDATE preset_states 
-        SET pst_is_locked=FALSE 
-        WHERE pst_name=$1
-        '''
-}
-
-
 class PostgresDriver(AbstractRuntimeData):
 
     def __init__(self, instance_id, config):
@@ -76,7 +53,7 @@ class PostgresDriver(AbstractRuntimeData):
         await self._assure_connected()
 
         await self._pool.execute(
-            queries['upsert_preset'],
+            'SELECT * FROM upsert_preset($1, $2, $3, $4)',
             preset_name, last_managed, last_managed_by, vms_states
         )
 
@@ -84,8 +61,7 @@ class PostgresDriver(AbstractRuntimeData):
         await self._assure_connected()
 
         preset = await self._pool.fetchrow(
-            queries['get_preset'],
-            preset_name
+            'SELECT * FROM preset_states WHERE pst_name = $1', preset_name
         )
 
         if not preset:
@@ -110,8 +86,7 @@ class PostgresDriver(AbstractRuntimeData):
         try:
             async with self._pool.acquire() as con:
                 is_locked = await con.fetchval(
-                    queries['lock_preset'],
-                    preset_name
+                    'SELECT * FROM lock_preset($1)', preset_name
                 )
                 return is_locked
         except Exception:
@@ -122,8 +97,7 @@ class PostgresDriver(AbstractRuntimeData):
         await self._assure_connected()
         try:
             await self._pool.execute(
-                queries['unlock_preset'],
-                preset_name
+                'UPDATE preset_states SET pst_is_locked=FALSE WHERE pst_name=$1', preset_name
             )
         except Exception:
             logging.exception('Unlock %s failed.', preset_name)

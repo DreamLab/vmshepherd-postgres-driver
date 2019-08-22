@@ -6,7 +6,7 @@ Changelog
 1.1.0 (2019-08-21)
 ------------------
 
-* refactoring
+* refactoring - moved logic to sql procedures
 
 1.0.0 (2018-06-10)
 ------------------
