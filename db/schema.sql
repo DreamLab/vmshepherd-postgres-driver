@@ -1,12 +1,12 @@
-create sequence seq_pst_id increment 1 start 1;
-create table preset_states (
-  pst_name                  varchar(128),
-  pst_last_managed          timestamp with time zone default null,
-  pst_last_managed_by       varchar(64),
-  pst_is_locked             boolean not null default false,
-  pst_vms_states            json,
-  constraint uq_pst_name unique (pst_name)
+CREATE SEQUENCE seq_pst_id INCREMENT 1 START 1;
+CREATE TABLE preset_states (
+    pst_name                  VARCHAR(128),
+    pst_last_managed          TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    pst_last_managed_by       VARCHAR(64),
+    pst_is_locked             BOOLEAN NOT NULL DEFAULT FALSE,
+    pst_vms_states            JSON,
+    CONSTRAINT uq_pst_name UNIQUE (pst_name)
 );
-create index i_pst_name on preset_states using btree (pst_name);
-grant all privileges on preset_states to vmshepherd;
-grant all privileges on sequence seq_pst_id to vmshepherd;
+CREATE INDEX i_pst_name ON preset_states USING BTREE (pst_name);
+GRANT ALL PRIVILEGES ON preset_states TO vmshepherd;
+GRANT ALL PRIVILEGES ON sequence seq_pst_id TO vmshepherd;
