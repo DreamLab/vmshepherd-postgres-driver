@@ -13,7 +13,6 @@ BEGIN
 			RETURN FALSE;
 		ELSE
 			UPDATE preset_states SET pst_is_locked=true where pst_name=preset_name;
-			RETURN TRUE;
 		END IF;
 	END IF;
 	RETURN TRUE;
