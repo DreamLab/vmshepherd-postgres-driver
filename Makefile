@@ -6,7 +6,7 @@ PGPASSWORD = postgres
 db: clean-db requirements-db run-postgres deploy-db info-db
 
 requirements-db:
-		@sudo apt-get install -y -q docker.io >/dev/null
+		@sudo apt-get install -y -q docker-ce >/dev/null
 		@sudo apt-get install -y -q postgresql-client >/dev/null
 
 run-postgres:
@@ -19,6 +19,7 @@ deploy-db:
 		@echo "$(PGHOST):5432:vmshepherd:vmshepherd:vmshepherd" > ~/.pgpass
 		@chmod 0600 ~/.pgpass
 		cat db/schema.sql | PGPASSWORD=$(PGPASSWORD) psql -h $(PGHOST) -U $(PGADMIN) vmshepherd
+		cat db/routines.sql | PGPASSWORD=$(PGPASSWORD) psql -h $(PGHOST) -U $(PGADMIN) vmshepherd
 
 clean-db:
 		-sudo docker stop pg_vmshepherd
@@ -44,7 +45,7 @@ schema-full: dump
 
 
 install: requirements
-		pipenv install --three
+		pipenv install --three --user
 
 test: requirements
 		pipenv run tox -r
