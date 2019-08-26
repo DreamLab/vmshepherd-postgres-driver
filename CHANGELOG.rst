@@ -2,6 +2,10 @@
 Changelog
 =========
 
+1.2.1 (2019-08-26)
+------------------
+
+* bugfix: set_preset_data - immutable arguments
 
 1.2.0 (2019-08-23)
 ------------------
