@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import pickle
 import logging
 import asyncpg
 from vmshepherd.runtime import AbstractRuntimeData
@@ -18,6 +19,13 @@ class PostgresDriver(AbstractRuntimeData):
             self._reconfigure = True
         self._config = config
 
+    async def _init_connection(self, conn):
+        await conn.set_type_codec(
+                'json',
+                encoder=json.dumps,
+                decoder=json.loads,
+                schema='pg_catalog')
+
     async def _assure_connected(self):
         if self._reconfigure:
             await self._pool.close()
@@ -29,13 +37,18 @@ class PostgresDriver(AbstractRuntimeData):
                 database=self._config['database'],
                 user=self._config['user'],
                 password=self._config['password'],
-                min_size=self._config.get('pool_size', 2)
+                min_size=self._config.get('pool_size', 2),
+                init=self._init_connection
             )
 
     async def _set_preset_data(self, preset_name, data):
         last_managed = datetime.fromtimestamp(data['last_managed']['time'])
         last_managed_by = data['last_managed']['id']
-        vms_states = json.dumps({'failed_checks': data['failed_checks']})
+
+        # pickle vms objects
+        if 'vms' in data['iaas']:
+            data['iaas']['vms'] = pickle.dumps(data['iaas']['vms']).hex()
+        vms_states = {'iaas': data['iaas'], 'failed_checks': data['failed_checks']}
 
         await self._assure_connected()
 
@@ -54,14 +67,18 @@ class PostgresDriver(AbstractRuntimeData):
         if not preset:
             return {}
 
-        vms_states = json.loads(preset['pst_vms_states'])
+        # unpickle vms objects
+        if 'vms' in preset['pst_vms_states']['iaas']:
+            vms = bytes.fromhex(preset['pst_vms_states']['iaas']['vms'])
+            preset['pst_vms_states']['iaas']['vms'] = pickle.loads(vms)
+
         return {
                  'last_managed': {
                    'time': datetime.timestamp(preset['pst_last_managed']),
                    'id': preset['pst_last_managed_by'],
                  },
-                 'iaas': {},
-                 'failed_checks': vms_states['failed_checks']
+                 'iaas': preset['pst_vms_states']['iaas'],
+                 'failed_checks': preset['pst_vms_states']['failed_checks']
                }
 
     async def _acquire_lock(self, preset_name):

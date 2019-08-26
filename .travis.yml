@@ -1,0 +1,35 @@
+language: python
+sudo: false
+cache: pip
+matrix:
+  include:
+  - python: '3.6'
+    env:
+    - TOXENV=python3-cover,report
+before_install:
+- python --version
+- uname -a
+- lsb_release -a
+install:
+- pip install tox
+- virtualenv --version
+- easy_install --version
+- pip --version
+- tox --version
+script:
+- tox -v
+after_failure:
+- more .tox/log/* | cat
+- more .tox/*/log/* | cat
+notifications:
+  email:
+    on_success: never
+    on_failure: always
+deploy:
+  provider: pypi
+  user: dreamlab-paas-pypi
+  password:
+    secure: IK2++JFtVim2mckdeRUDd450WyobgK7mCrGQqine3lpSC82It9SHWLxgd8kZx1iDZ8jRkNkEcQ/ebbh+JXDUq2SP55NIiComT04LkyP120TC2jz3i6j/7Il0H/17ijUXg9xt+N+uy3oCx/wBzchE3phVzHIcqlmCDtP3NZ0fefw8vE2bmbGU+VCmVXt+icugwIVE5LjuXDBOvHZMJTp09oXAQjQWUifYCr5gTHcbPYAQ8ebBTJg8efZqu4NN/VH1iDM3XcWvoiOcsZULo1ZBzzruOEJGbl8Ye7ALK3x+ND0o3fw71EjtmHVDz5zBErvTrEjGax1UzDi0w+UganbiYFFRxMqgCzDhBWIMIv/MZutz+jkrIlXDgAhiNb5l386pJujavsBUEOL07KoR1NwNXuD8METi0266tPR4R1b1gTeVZG5PZsHV5OG0i/C+x7b/SuNznu8u4gpXZA2GqUnbHRR13meW5b2ZXLnTcq6rHKmPh1MjkxjAQDluIEUs4t/Q32muzi5wHOIVZMgGPRoQGQOOMlscevnVepXqgAPGH0+om4cyYy2rEETOw90CEma1INJcRuQ2U4LBf3Kavd3gxFba7akkw77xSvczovYjeUGpIy4RixOrv4stkGy96cA7V2YtIUXA4B910OxZXLBKH2Oev3AwWsHWxn3CkVlutzY=
+  on:
+    tags: true
+    branch: master
