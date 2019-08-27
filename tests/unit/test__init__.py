@@ -1,5 +1,6 @@
 import json
-from datetime import datetime
+import pickle
+import datetime
 from unittest.mock import ANY, MagicMock, patch
 
 from aiounittest import AsyncTestCase, futurized
@@ -32,7 +33,8 @@ class TestPostgresDriver(AsyncTestCase):
             'user': 'mock_db_user_name',
             'password': 'mock_db_password',
             'min_size': 2,
-            'port': 5432
+            'port': 5432,
+            'init': ANY
         }
         mock_vmshepherd_instance_id = 'mock_instance_id'
 
@@ -42,7 +44,9 @@ class TestPostgresDriver(AsyncTestCase):
                 'time': 0,
                 'id': 'mock_instance_id'
             },
-            'iaas': {},
+            'iaas': {
+                'vms': [{'id': 'mock_vm_id_1'}, {'id': 'mock_vm_id_2'}]
+            },
             'failed_checks': {
                 'mock_vm_id_1': {'time': 1520899355.1556408, 'count': 1},
                 'mock_vm_id_2': {'time': 1520899355.1556463, 'count': 1}
@@ -85,8 +89,13 @@ class TestPostgresDriver(AsyncTestCase):
 
         mock_pool.execute.assert_called_once_with(
             ANY, 'mock_preset_name',
-            datetime(1970, 1, 1, 1, 0), 'mock_instance_id',
-            json.dumps({'failed_checks': self.mock_preset_data['failed_checks']})
+            datetime.datetime.fromtimestamp(0), 'mock_instance_id',
+            {
+                'iaas': {
+                    'vms': pickle.dumps(self.mock_preset_data['iaas']['vms']).hex(),
+                },
+                'failed_checks': self.mock_preset_data['failed_checks']
+            }
         )
 
     @assure_connected
@@ -102,9 +111,14 @@ class TestPostgresDriver(AsyncTestCase):
     async def test_get_preset_data_exist(self):
         mock_pool = patch.object(self.pg_driver, '_pool').start()
         mock_pool.fetchrow.return_value = futurized({
-            'pst_last_managed': datetime(1970, 1, 1, 1, 0),
+            'pst_last_managed': datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
             'pst_last_managed_by': 'mock_instance_id',
-            'pst_vms_states': '{"failed_checks": {"mock_vm_id_1": {"time": 0, "count": 2}}}'
+            'pst_vms_states': {
+                'iaas': {
+                    'vms': pickle.dumps([{'id': 'mock_vm_id_1'}]).hex()
+                },
+                'failed_checks': {'mock_vm_id_1': {'time': 0, 'count': 2}}
+            }
         })
 
         preset = await self.pg_driver._get_preset_data('mock_preset_name')  # pylint: disable=protected-access
@@ -114,7 +128,9 @@ class TestPostgresDriver(AsyncTestCase):
                 'time': 0,
                 'id': 'mock_instance_id'
             },
-            'iaas': {},
+            'iaas': {
+                'vms': [{'id': 'mock_vm_id_1'}]
+            },
             'failed_checks': {
                 'mock_vm_id_1': {'time': 0, 'count': 2}
             }

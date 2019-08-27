@@ -1,4 +1,5 @@
 from datetime import datetime
+import copy
 import json
 import pickle
 import logging
@@ -45,10 +46,11 @@ class PostgresDriver(AbstractRuntimeData):
         last_managed = datetime.fromtimestamp(data['last_managed']['time'])
         last_managed_by = data['last_managed']['id']
 
+        preset_data = copy.deepcopy(data)
         # pickle vms objects
         if 'vms' in data['iaas']:
-            data['iaas']['vms'] = pickle.dumps(data['iaas']['vms']).hex()
-        vms_states = {'iaas': data['iaas'], 'failed_checks': data['failed_checks']}
+            preset_data['iaas']['vms'] = pickle.dumps(preset_data['iaas']['vms']).hex()
+        vms_states = {'iaas': preset_data['iaas'], 'failed_checks': preset_data['failed_checks']}
 
         await self._assure_connected()
 
