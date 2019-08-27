@@ -1,6 +1,6 @@
 import json
 import pickle
-from datetime import datetime
+import datetime
 from unittest.mock import ANY, MagicMock, patch
 
 from aiounittest import AsyncTestCase, futurized
@@ -89,7 +89,7 @@ class TestPostgresDriver(AsyncTestCase):
 
         mock_pool.execute.assert_called_once_with(
             ANY, 'mock_preset_name',
-            datetime(1970, 1, 1, 1, 0), 'mock_instance_id',
+            datetime.datetime.fromtimestamp(0), 'mock_instance_id',
             {
                 'iaas': {
                     'vms': pickle.dumps(self.mock_preset_data['iaas']['vms']).hex(),
@@ -111,7 +111,7 @@ class TestPostgresDriver(AsyncTestCase):
     async def test_get_preset_data_exist(self):
         mock_pool = patch.object(self.pg_driver, '_pool').start()
         mock_pool.fetchrow.return_value = futurized({
-            'pst_last_managed': datetime(1970, 1, 1, 1, 0),
+            'pst_last_managed': datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc),
             'pst_last_managed_by': 'mock_instance_id',
             'pst_vms_states': {
                 'iaas': {
