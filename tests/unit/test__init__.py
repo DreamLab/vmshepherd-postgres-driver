@@ -114,7 +114,7 @@ class TestPostgresDriver(AsyncTestCase):
             'pst_last_managed': datetime(1970, 1, 1, 1, 0),
             'pst_last_managed_by': 'mock_instance_id',
             'pst_vms_states': {
-                'iaas': {q
+                'iaas': {
                     'vms': pickle.dumps([{'id': 'mock_vm_id_1'}]).hex()
                 },
                 'failed_checks': {'mock_vm_id_1': {'time': 0, 'count': 2}}
